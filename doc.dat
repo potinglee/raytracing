@@ -1,0 +1,10 @@
+title                    orig opt
+
+"normalize()"              1.58 0.68
+"length()"                 2.58 1.42
+"add_vector()"             1.78 1.19
+"subtract_vector()"        0.53 0.3
+"multiply_vectors()"       2.47 1.31
+"multiply_vector()"        1.32 1.14
+"cross_product()"          2.36 0.97
+"dot_product()"            1.02 0.49

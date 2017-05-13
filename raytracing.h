@@ -5,6 +5,7 @@
 #include <stdint.h>
 
 #define thread_num 64
+#define thread_num_root 8
 //
 // void raytracing_dowork(uint8_t *pixels, color background_color,
 //                 rectangular_node rectangulars, sphere_node spheres,
@@ -16,15 +17,15 @@ void raytracing(uint8_t *pixels, color background_color,
                 light_node lights, const viewpoint *view,
                 int width, int height);
 typedef struct {
-  uint8_t *pixels;
-  color background_color;
-  rectangular_node *rectangulars;
-  sphere_node *spheres;
-  light_node *lights;
-  const viewpoint *view;
-  int width;
-  int height;
-  int tag;
-}raytracing_thread_data;
+    uint8_t *pixels;
+    color background_color;
+    rectangular_node *rectangulars;
+    sphere_node *spheres;
+    light_node *lights;
+    const viewpoint *view;
+    int width;
+    int height;
+    int tag;
+} raytracing_thread_data;
 
 #endif

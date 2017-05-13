@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <pthread.h>
 
 #include "math-toolkit.h"
 #include "primitives.h"
@@ -453,22 +454,20 @@ static unsigned int ray_color(const point3 e, double t,
 }
 
 /* @param background_color this is not ambient light */
-void raytracing(uint8_t *pixels, color background_color,
-                rectangular_node rectangulars, sphere_node spheres,
-                light_node lights, const viewpoint *view,
-                int width, int height)
+void *raytracing_dowork(void *inputdata)
 {
     point3 u, v, w, d;
     color object_color = { 0.0, 0.0, 0.0 };
-
+    raytracing_thread_data *mydata;
+    mydata = (raytracing_thread_data *)inputdata;
     /* calculate u, v, w */
-    calculateBasisVectors(u, v, w, view);
+    calculateBasisVectors(u, v, w, mydata->view);
 
     idx_stack stk;
 
     int factor = sqrt(SAMPLES);
-    for (int j = 0; j < height; j++) {
-        for (int i = 0; i < width; i++) {
+    for (int j = mydata->tag; j < mydata->height; j += thread_num) {
+        for (int i = 0; i < mydata->width; i++) {
             double r = 0, g = 0, b = 0;
             /* MSAA */
             for (int s = 0; s < SAMPLES; s++) {
@@ -476,23 +475,61 @@ void raytracing(uint8_t *pixels, color background_color,
                 rayConstruction(d, u, v, w,
                                 i * factor + s / factor,
                                 j * factor + s % factor,
-                                view,
-                                width * factor, height * factor);
-                if (ray_color(view->vrp, 0.0, d, &stk, rectangulars, spheres,
-                              lights, object_color,
+                                mydata->view,
+                                mydata->width * factor, mydata->height * factor);
+                if (ray_color(mydata->view->vrp, 0.0, d, &stk, * mydata->rectangulars, * mydata->spheres,
+                              * mydata->lights, object_color,
                               MAX_REFLECTION_BOUNCES)) {
                     r += object_color[0];
                     g += object_color[1];
                     b += object_color[2];
                 } else {
-                    r += background_color[0];
-                    g += background_color[1];
-                    b += background_color[2];
+                    r += mydata->background_color[0];
+                    g += mydata->background_color[1];
+                    b += mydata->background_color[2];
                 }
-                pixels[((i + (j * width)) * 3) + 0] = r * 255 / SAMPLES;
-                pixels[((i + (j * width)) * 3) + 1] = g * 255 / SAMPLES;
-                pixels[((i + (j * width)) * 3) + 2] = b * 255 / SAMPLES;
+                mydata->pixels[((i + (j * mydata->width)) * 3) + 0] = r * 255 / SAMPLES;
+                mydata->pixels[((i + (j * mydata->width)) * 3) + 1] = g * 255 / SAMPLES;
+                mydata->pixels[((i + (j * mydata->width)) * 3) + 2] = b * 255 / SAMPLES;
             }
         }
     }
+}
+// 從 main.c進入 raytracing，由 raytracing產生 thread，真正的運算在 raytracing_dowork中完成
+void raytracing(uint8_t *pixels, color background_color,
+                rectangular_node rectangulars, sphere_node spheres,
+                light_node lights, const viewpoint *view,
+                int width, int height)
+{
+  // 產生 thread id跟裝資料的結構raytracing_thread_data
+  raytracing_thread_data data[thread_num];
+  pthread_t raytracing_thread[thread_num];
+
+  for(int i = 0; i<thread_num; i++) {
+    data[i].pixels = pixels;
+    data[i].background_color[0] = background_color[0];
+    data[i].background_color[1] = background_color[1];
+    data[i].background_color[2] = background_color[2];
+    data[i].rectangulars = &rectangulars;
+    data[i].spheres = &spheres;
+    data[i].lights = &lights;
+    data[i].view = view;
+    data[i].width = width;
+    data[i].height = height;
+    data[i].tag = i;
+
+    // printf("%s%d\n", "create thread ",i+1);
+    int fail1 = pthread_create(&raytracing_thread[i], NULL, raytracing_dowork, (void *)&data[i]);
+    if(fail1) {
+      printf("%s\n", "error, in raytracing.c line 523");
+      exit(-1);
+    }
+  }
+  for(int i = 0; i<thread_num; i++) {
+    int fail2 = pthread_join(raytracing_thread[i], NULL);
+    if(fail2) {
+      printf("%s\n", "error, in raytracing.c line 529");
+      exit(-1);
+    }
+  }
 }

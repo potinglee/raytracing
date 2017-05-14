@@ -6,11 +6,7 @@
 
 #define thread_num 16
 #define thread_num_root 4
-//
-// void raytracing_dowork(uint8_t *pixels, color background_color,
-//                 rectangular_node rectangulars, sphere_node spheres,
-//                 light_node lights, const viewpoint *view,
-//                 int width, int height);
+
 void *raytracing_dowork(void *inputdata);
 void raytracing(uint8_t *pixels, color background_color,
                 rectangular_node rectangulars, sphere_node spheres,

@@ -5,7 +5,7 @@
 #include "primitives.h"
 #include "raytracing.h"
 #include "idx_stack.h"
-
+// 測試註釋
 #define MAX_REFLECTION_BOUNCES	3
 #define MAX_DISTANCE 1000000000000.0
 #define MIN_DISTANCE 0.00001

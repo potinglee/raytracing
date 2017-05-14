@@ -464,13 +464,16 @@ void *raytracing_dowork(void *inputdata)
     calculateBasisVectors(u, v, w, mydata->view);
 
     idx_stack stk;
-
-    int height_offset = mydata->tag / thread_num_root;
-    int width_offset = mydata->tag % thread_num_root - 1;
+    //
+    // int height_offset = mydata->tag / thread_num_root;
+    // int width_offset = mydata->tag % thread_num_root - 1;
 
     int factor = sqrt(SAMPLES);
-    for (int j = height_offset; j < mydata->height; j += thread_num_root) {
-        for (int i = width_offset; i < mydata->width; i += thread_num_root) {
+    // for (int j = height_offset; j < mydata->height; j += thread_num_root) {
+    //     for (int i = width_offset; i < mydata->width; i += thread_num_root) {
+
+    for (int j = mydata->tag; j < mydata->height; j += thread_num) {
+        for (int i = 0; i < mydata->width; i += 1) {
             double r = 0, g = 0, b = 0;
             /* MSAA */
             for (int s = 0; s < SAMPLES; s++) {

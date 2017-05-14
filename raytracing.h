@@ -4,8 +4,8 @@
 #include "objects.h"
 #include <stdint.h>
 
-#define thread_num 64
-#define thread_num_root 8
+#define thread_num 16
+#define thread_num_root 4
 //
 // void raytracing_dowork(uint8_t *pixels, color background_color,
 //                 rectangular_node rectangulars, sphere_node spheres,

@@ -500,6 +500,7 @@ void *raytracing_dowork(void *inputdata)
             }
         }
     }
+    pthread_exit(NULL);
 }
 // 從 main.c進入 raytracing，由 raytracing產生 thread，真正的運算在 raytracing_dowork中完成
 void raytracing(uint8_t *pixels, color background_color,
